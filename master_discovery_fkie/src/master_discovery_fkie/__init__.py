@@ -89,6 +89,7 @@ def main():
   Creates and runs the ROS node using multicast messages for discovering
   '''
   import master_discovery
+  import netifaces
   # setup the loglevel
   try:
     log_level = getattr(rospy, rospy.get_param('/%s/log_level'%PROCESS_NAME, "INFO"))
@@ -101,6 +102,13 @@ def main():
   mcast_group = rospy.get_param('~mcast_group', MCAST_GROUP)
   mcast_port = rospy.get_param('~mcast_port', MCAST_PORT)
   rpc_port = rospy.get_param('~rpc_port', getDefaultRPCPort())
+
+  # Wait until at least one network is available
+  rospy.loginfo("Checking network connectivity...")
+  while not netifaces.gateways()['default']:
+    continue
+  rospy.loginfo("Network is up, starting master_discovery")
+
   try:
     discoverer = master_discovery.Discoverer(mcast_port, mcast_group, rpc_port)
     discoverer.start()
